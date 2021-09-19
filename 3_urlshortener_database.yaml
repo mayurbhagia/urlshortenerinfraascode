@@ -77,12 +77,10 @@ Resources:
 Outputs:
     
   URLshortenerdatabaseendpoint:
-    Value:
-      Fn::GetAtt: [ !Ref UrlShortenerRDSInstance, Endpoint.Address ]
+    Value: GetAtt !Ref UrlShortenerRDSInstance.Endpoint
     Export:
       Name: "URLShortener-Database-Endpoint"
   URLshortenerdatabaseport:
-    Value:
-      Fn::GetAtt: [ !Ref UrlShortenerRDSInstance, Endpoint.Port ]
+    Value: GetAtt !Ref UrlShortenerRDSInstance.Port
     Export:
       Name: "URLShortener-Database-Port"         

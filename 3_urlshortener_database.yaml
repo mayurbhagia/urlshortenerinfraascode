@@ -77,10 +77,10 @@ Resources:
 Outputs:
     
   URLshortenerdatabaseendpoint:
-    Value: GetAtt !Ref UrlShortenerRDSInstance.Endpoint
+    Value: GetAtt !Ref UrlShortenerRDSInstance.Endpoint.Address
     Export:
       Name: "URLShortener-Database-Endpoint"
   URLshortenerdatabaseport:
-    Value: GetAtt !Ref UrlShortenerRDSInstance.Port
+    Value: GetAtt !Ref UrlShortenerRDSInstance.Endpoint.Port
     Export:
       Name: "URLShortener-Database-Port"         

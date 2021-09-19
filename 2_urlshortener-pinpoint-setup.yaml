@@ -1,0 +1,191 @@
+Parameters:
+  Pinpointprojectname:
+    Type: String
+    Description: Enter Pinpointprojectname
+    Default: urlshortenerpinpointapp
+    
+Resources:
+
+  Pinpointapplication:
+    Type: AWS::Pinpoint::App
+    Properties:
+        Name: !Ref Pinpointprojectname
+    
+  PinpointSMSchannel:
+    Type: AWS::Pinpoint::SMSChannel
+    Properties:
+        ApplicationId: !Ref Pinpointapplication
+        Enabled: true
+        
+  eventstream: 
+    Type: AWS::Pinpoint::EventStream
+    Properties: 
+      ApplicationId: !Ref Pinpointapplication
+      DestinationStreamArn: !GetAtt KinesisFirehoseDeliveryStream.Arn
+      RoleArn: !GetAtt FirehoseDeliveryIAMRole.Arn
+    DependsOn: KinesisFirehoseDeliveryStream
+        
+  
+        
+  KinesisFirehoseDeliveryStream:
+    Type: AWS::KinesisFirehose::DeliveryStream
+    Properties:
+      DeliveryStreamName: "urlshortnerdeliverystream"
+      DeliveryStreamType: DirectPut
+
+      S3DestinationConfiguration:
+        BucketARN: 
+          Fn::GetAtt:
+          - URLShortnerS3Bucket
+          - Arn
+        Prefix: url-shortener
+        BufferingHints:
+          IntervalInSeconds: 60
+          SizeInMBs: 100
+        CloudWatchLoggingOptions:
+          Enabled: 'false'
+        CompressionFormat: UNCOMPRESSED
+        EncryptionConfiguration:
+          NoEncryptionConfig: NoEncryption
+        RoleARN:
+          Fn::GetAtt:
+            - FirehoseDeliveryIAMRole
+            - Arn
+    DependsOn:
+    - FirehoseDeliveryIAMPolicy
+    - URLShortnerS3Bucket
+    
+  FirehoseDeliveryIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: ''
+          Effect: Allow
+          Principal:
+            Service:
+              - firehose.amazonaws.com
+          Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+        -
+          PolicyName: "root"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "s3:AbortMultipartUpload"
+                  - "s3:GetBucketLocation"
+                  - "s3:GetObject"
+                  - "s3:ListBucket"
+                  - "s3:ListBucketMultipartUploads"
+                  - "s3:PutObject"
+                Resource:
+                  - !Join
+                    - ''
+                    - - 'arn:aws:s3:::'
+                    - !Ref URLShortnerS3Bucket
+                  - !Join
+                    - ''
+                    - - 'arn:aws:s3:::'
+                    - !Ref URLShortnerS3Bucket/*
+
+              -
+                Effect: "Allow"
+                Action: "logs:PutLogEvents"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/kinesisfirehose/*:log-stream:*"
+              -
+                Effect: "Allow"
+                Action:
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:*"      
+          Condition:
+            StringEquals:
+              'sts:ExternalId': !Ref 'AWS::AccountId'
+
+ 
+              
+  URLShortnerS3Bucket:
+    Type: "AWS::S3::Bucket"
+    Properties:
+      BucketName: !Join
+        - "-"
+        - - "url-shortener-bucket"
+          - !Select
+            - 0
+            - !Split
+              - "-"
+              - !Select
+                - 2
+                - !Split
+                  - "/"
+                  - !Ref "AWS::StackId"
+    
+  FirehoseDeliveryIAMPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: "FirehoseDeliveryIAMPolicy"
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Action:
+          - s3:AbortMultipartUpload
+          - s3:GetBucketLocation
+          - s3:GetObject
+          - s3:ListBucket
+          - s3:ListBucketMultipartUploads
+          - s3:PutObject
+          Resource: 
+            - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref URLShortnerS3Bucket
+            - !Join
+                - ''
+                - - 'arn:aws:s3:::'
+                  - !Ref URLShortnerS3Bucket/*      
+        - Effect: Allow
+          Action:
+          - kinesis:DescribeStream
+          - kinesis:GetShardIterator
+          - kinesis:GetRecords
+          - firehose:*
+          - logs:CreateLogGroup
+          - logs:CreateLogStream
+          - logs:PutLogEvents
+          Resource: "*"
+      Roles:
+      - Ref: FirehoseDeliveryIAMRole
+    DependsOn: URLShortnerS3Bucket
+
+Outputs:
+
+  firehoseDeliveryStreamArn:
+    Description: Firehose Delivery Stream ARN
+    Value:
+      Fn::GetAtt:
+      - KinesisFirehoseDeliveryStream
+      - Arn
+  firehoseDeliveryRoleArn:
+    Description: Firehose Delivery Role ARN
+    Value:
+      Fn::GetAtt:
+      - FirehoseDeliveryIAMRole
+      - Arn
+  pinpointprojectid:
+    Description: Pinpoint project id
+    Value: !Ref Pinpointapplication
+    Export:
+      Name: "URLShortener-Pinpoint-ProjectId"   
+      
+  pinpoints3bucket:
+    Description: Pinpoint delivery stream S3 bucket name
+    Value: !Ref URLShortnerS3Bucket
+    Export:
+      Name: "URLShortener-Pinpoint-BucketName"  

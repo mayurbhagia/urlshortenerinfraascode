@@ -5,10 +5,10 @@ Parameters:
     Description: Enter VPC
   PrivateSubnet1:
     Type: String
-    Description: Enter PublicSubnet1
+    Description: Enter PrivateSubnet1
   PrivateSubnet2:
     Type: String
-    Description: Enter PublicSubnet2    
+    Description: Enter PrivateSubnet2    
   urlshortenerimage:
     Type: String
     Description: Container image for urlshortener

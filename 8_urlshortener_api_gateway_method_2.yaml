@@ -43,7 +43,7 @@ Resources:
       
         IntegrationResponses:
           - StatusCode: 200
-            ResponseTemplates: {"application/json": "$input.json('$.body')"}
+            ResponseTemplates: {"application/json": ""}
       MethodResponses:
         - StatusCode: 200
           ResponseModels: { "application/json": "Empty" }

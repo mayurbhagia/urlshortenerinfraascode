@@ -123,7 +123,7 @@ Resources:
               - mobiletargeting:Put*
               - mobiletargeting:Create*
             Resource:
-              - arn:aws:mobiletargeting:*:931177292463:apps/*
+              - arn:aws:mobiletargeting:*:*:*
       Roles:
         - !Ref TaskIamRole
 

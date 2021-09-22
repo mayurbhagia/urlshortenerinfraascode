@@ -9,6 +9,7 @@ Parameters:
     
   loadbalancerarn:
     Type: String
+    Description: Please add load balancer ARN with http://, dont forget to add http://
     
   stagename:
     Type: String

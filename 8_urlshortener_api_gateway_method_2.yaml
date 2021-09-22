@@ -7,6 +7,8 @@ Parameters:
     Default: REGIONAL
   loadbalancerarn:
     Type: String
+    Description: Please add load balancer ARN with http://, dont forget to add http://
+    
 Resources:
   URLShortenerRESTAPIWithMessage:
     Type: AWS::ApiGateway::RestApi

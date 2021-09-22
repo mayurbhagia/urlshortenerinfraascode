@@ -28,7 +28,7 @@ Resources:
   urlshortenerlb:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
-      Name: "urlshortenerlb1"
+      Name: "urlshortenerlb"
       Scheme: internet-facing
       LoadBalancerAttributes:
         - Key: idle_timeout.timeout_seconds
@@ -48,7 +48,7 @@ Resources:
       HealthCheckTimeoutSeconds: 5
       HealthyThresholdCount: 5
       TargetType: ip
-      Name: "urlshortenertg1"
+      Name: "urlshortenertg"
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 2

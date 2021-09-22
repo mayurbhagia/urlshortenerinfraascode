@@ -47,7 +47,7 @@ Resources:
       
         IntegrationResponses:
           - StatusCode: 200
-            ResponseTemplates: {"application/json": "$input.json('$.body')"}
+            ResponseTemplates: {"application/json": ""}
       MethodResponses:
         - StatusCode: 200
           ResponseModels: { "application/json": "Empty" }
@@ -69,7 +69,7 @@ Outputs:
   APIUrlPrefix:
     Value:
       Fn::Sub:
-      - https://${ServerlessRestApi}.execute-api.${Region}.amazonaws.com/newuat
+      - https://${ServerlessRestApi}.execute-api.${Region}.amazonaws.com/uat
       - Region:
           Ref: AWS::Region
         ServerlessRestApi:
